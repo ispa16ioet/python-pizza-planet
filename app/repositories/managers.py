@@ -80,6 +80,13 @@ class OrderManager(BaseManager):
     def update(cls):
         raise NotImplementedError(f'Method not suported for {cls.__name__}')
 
+class ReportManager(BaseManager):
+
+    @classmethod
+    def test_connection(cls,model):
+        print(cls.session.query(model).all())
+        return cls.session.query(model).all() or []
+        
 
 class IndexManager(BaseManager):
 

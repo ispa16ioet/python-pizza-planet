@@ -1,4 +1,5 @@
 from sqlalchemy.exc import SQLAlchemyError
+from datetime import datetime
 
 from ..common.utils import check_required_keys
 from ..repositories.managers import (IngredientManager, OrderManager,
@@ -20,6 +21,9 @@ class OrderController(BaseController):
         current_order = order.copy()
         if not check_required_keys(cls.__required_info, current_order):
             return 'Invalid order payload', None
+        
+        if current_order.get('date'):
+            current_order['date']= datetime.strptime(current_order['date'], "%Y-%m-%d %H:%M:%S.%f")
 
         size_id = current_order.get('size_id')
         size = SizeManager.get_by_id(size_id)
