@@ -78,7 +78,7 @@ def generate_random_list_of_names():
     return names
 
 def create_ramdon_order(fake_names):
-    name = fake_names[fake.random_int(min=0, max=350)]
+    name = fake_names[fake.random_int(min=0, max=349)]
     dni = fake.random_int(min=10000000, max=99999999)
     phone_number = fake.phone_number()
     address = fake.address()
@@ -108,8 +108,8 @@ models = [
     {'name': 'size', 'data': sizes}
 ]
 
-#for model in models:
-    #create_models(model['name'],model['data'])
+for model in models:
+    create_models(model['name'],model['data'])
 fake_names = generate_random_list_of_names()
 for i in range(1,1000):
     create_models('order',[create_ramdon_order(fake_names)])

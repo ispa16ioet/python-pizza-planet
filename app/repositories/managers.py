@@ -1,6 +1,6 @@
 from typing import Any, List, Optional, Sequence
 
-from sqlalchemy.sql import text, column
+from sqlalchemy.sql import text, column, func, desc
 
 from .models import Ingredient, Order, OrderDetail, Size, Beverage, db
 from .serializers import (IngredientSerializer, BeverageSerializer, OrderSerializer,
@@ -83,11 +83,94 @@ class OrderManager(BaseManager):
 class ReportManager(BaseManager):
 
     @classmethod
-    def test_connection(cls,model):
-        print(cls.session.query(model).all())
-        return cls.session.query(model).all() or []
-        
+    def get_most_common_ingredient(cls,model):
+        most_common_ingredients = cls.session.query(
+            Ingredient.name,
+            func.count(OrderDetail.ingredient_id).label('count')
+        ).join(
+            OrderDetail,
+            Ingredient._id == OrderDetail.ingredient_id
+        ).group_by(
+            Ingredient.name
+        ).order_by(
+            func.count(OrderDetail.ingredient_id).desc()
+        ).limit(3).all()
 
+        most_common_ingredient_list = []
+        for name, count in most_common_ingredients:
+            most_common_ingredient_list.append({'value_name': name,'total_value':count})
+        return most_common_ingredient_list or []
+    
+    @classmethod
+    def get_less_common_ingredient(cls,model):
+        less_common_ingredients= cls.session.query(
+            Ingredient.name,
+            func.count(OrderDetail.ingredient_id).label('count')
+        ).join(
+            OrderDetail,
+            Ingredient._id == OrderDetail.ingredient_id
+        ).group_by(
+            Ingredient.name
+        ).order_by(
+            func.count(OrderDetail.ingredient_id).asc()
+        ).limit(3).all()
+        less_common_ingredient_list = []
+        for name, count in less_common_ingredients:
+            less_common_ingredient_list.append({'value_name': name,'total_value':count})
+        return less_common_ingredient_list or []
+    
+    @classmethod
+    def get_months_with_more_revenue(cls,model):
+        revenue_by_month = cls.session.query(
+        func.strftime('%Y-%m', Order.date).label('month'),
+        func.sum(Order.total_price).label('revenue')
+        ).group_by('month').order_by(desc('revenue')).limit(3).all()
+        months_with_more_revenue = []
+        # print the results
+        for month, revenue in revenue_by_month:
+            months_with_more_revenue.append({'value_name': month,'total_value':round(revenue, 2)})
+        return months_with_more_revenue or []
+    
+    @classmethod
+    def get_worst_clients(cls,model):
+
+        total_spent = func.sum(Order.total_price).label('total_spent')
+        client_spending = cls.session.query(
+            Order.client_name,
+            total_spent
+        ).group_by(Order.client_name).subquery()
+
+        bottom_clients = cls.session.query(
+            client_spending.c.client_name,
+            client_spending.c.total_spent
+        ).order_by(client_spending.c.total_spent).limit(3).all()
+
+        worst_clients = []
+
+        for client_name, total_spent in bottom_clients:
+            worst_clients.append({'value_name': client_name,'total_value':round(total_spent, 2)})
+        return worst_clients or []
+    
+    @classmethod
+    def get_best_clients(cls,model):
+
+        total_spent = func.sum(Order.total_price).label('total_spent')
+        client_spending = cls.session.query(
+            Order.client_name,
+            total_spent
+        ).group_by(Order.client_name).subquery()
+
+        top_clients = cls.session.query(
+            client_spending.c.client_name,
+            client_spending.c.total_spent
+        ).order_by(desc(client_spending.c.total_spent)).limit(3).all()
+
+        best_clients = []
+
+        for client_name, total_spent in top_clients:
+            best_clients.append({'value_name': client_name,'total_value':round(total_spent, 2)})
+        return best_clients or []
+    
 class IndexManager(BaseManager):
 
     @classmethod
