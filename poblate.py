@@ -93,6 +93,7 @@ def create_ramdon_order(fake_names):
     data = {
         'client_name': name, 
         'client_dni': dni, 
+        'state': 'finish', 
         'client_address': address, 
         'client_phone': phone_number, 
         'size_id': size_id, 

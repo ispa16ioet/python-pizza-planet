@@ -3,7 +3,7 @@ from flask import Blueprint, jsonify, request
 
 from ..controllers import OrderController
 from ..order.order import Order
-from ..order.order_state import CreateOrder
+from ..order.order_state import CreateOrder,OnPreparing, Sended, Finish
 order = Blueprint('order', __name__)
 
 
@@ -19,16 +19,36 @@ def create_order():
 
 @order.route('/id/<_id>', methods=GET)
 def get_order_by_id(_id: int):
-    order, error = OrderController.get_by_id(_id)
-    response = order if not error else {'error': error}
-    status_code = 200 if order else 404 if not error else 400
+    new_order = Order()
+    new_order.get_order_by_id(_id)
+    response = new_order.order_detail if not new_order.order_error else {'error': new_order.order_error}
+    status_code = 200 if not new_order.order_error else 400
+    
+    return jsonify(response), status_code
+
+@order.route('/change_state/<_id>', methods=GET)
+def change_state(_id: int):
+
+    new_order = Order()
+    new_order.get_order_by_id(_id)
+    if new_order.order_detail['state']=='OrderRealized':
+        new_order.set_state(OnPreparing(new_order))
+    elif new_order.order_detail['state']=='OnPreparing':
+        new_order.set_state(Sended(new_order))
+    elif new_order.order_detail['state']=='Sended':
+        new_order.set_state(Finish(new_order))
+
+    response = new_order.order_detail if not new_order.order_error else {'error': new_order.order_error}
+    status_code = 200 if not new_order.order_error else 400
+    
+    
     return jsonify(response), status_code
 
 
 @order.route('/', methods=GET)
 def get_orders():
-    orders, error = OrderController.get_all()
-    print()
-    response = orders if not error else {'error': error}
-    status_code = 200 if orders else 404 if not error else 400
+    new_order = Order()
+    new_order.get_all_orders()
+    response = new_order.order_detail if not new_order.order_error else {'error': new_order.order_error}
+    status_code = 200 if not new_order.order_error else 400
     return jsonify(response), status_code

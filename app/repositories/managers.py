@@ -66,19 +66,20 @@ class OrderManager(BaseManager):
     serializer = OrderSerializer
 
     @classmethod
-    def create(cls, order_data: dict, ingredients: List[Ingredient]):
+    def create(cls, order_data: dict, ingredients: List[Ingredient], beverages: List[Ingredient]):
         new_order = cls.model(**order_data)
         cls.session.add(new_order)
         cls.session.flush()
         cls.session.refresh(new_order)
+        
         cls.session.add_all((OrderDetail(order_id=new_order._id, ingredient_id=ingredient._id, ingredient_price=ingredient.price)
-                             for ingredient in ingredients))
+                             for ingredient in ingredients ))
+        cls.session.add_all((OrderDetail(order_id=new_order._id, beverage_id=beverage._id, beverage_price=beverage.price)
+                             for beverage in beverages ))
         cls.session.commit()
         return cls.serializer().dump(new_order)
 
-    @classmethod
-    def update(cls):
-        raise NotImplementedError(f'Method not suported for {cls.__name__}')
+    
 
 class ReportManager(BaseManager):
 
@@ -121,12 +122,13 @@ class ReportManager(BaseManager):
     
     @classmethod
     def get_months_with_more_revenue(cls,model):
+
         revenue_by_month = cls.session.query(
         func.strftime('%Y-%m', Order.date).label('month'),
         func.sum(Order.total_price).label('revenue')
         ).group_by('month').order_by(desc('revenue')).limit(3).all()
         months_with_more_revenue = []
-        # print the results
+
         for month, revenue in revenue_by_month:
             months_with_more_revenue.append({'value_name': month,'total_value':round(revenue, 2)})
         return months_with_more_revenue or []

@@ -16,11 +16,9 @@ def create_beverage():
 
 @beverage.route('/', methods=PUT)
 def update_beverage():
-    print('entra')
     beverage, error = BeverageController.update(request.json)
     response = beverage if not error else {'error': error}
     status_code = 200 if not error else 400
-    print(response)
     return jsonify(response), status_code
 
 
