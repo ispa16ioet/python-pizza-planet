@@ -13,7 +13,7 @@ def create_order():
     new_order = Order()
     new_order.set_state(CreateOrder(new_order))
     new_order.create_order(request.json)
-
+    
     return state_controll_action(new_order)
 
 @order.route('/id/<_id>', methods=GET)
@@ -27,7 +27,6 @@ def change_state(_id: int):
 
     new_order = Order()
     new_order.get_order_by_id(_id)
-    
     change_order_state(new_order)
 
     return state_controll_action(new_order)
@@ -37,5 +36,5 @@ def change_state(_id: int):
 def get_orders():
     new_order = Order()
     new_order.get_all_orders()
-    
+
     return state_controll_action(new_order)

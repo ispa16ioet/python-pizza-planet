@@ -1,8 +1,9 @@
 import random
 import string
 from typing import Any, Union
+from faker import Faker
 
-
+fake = Faker()
 def get_random_string() -> str:
     letters = list(string.ascii_lowercase)
     random.shuffle(letters)
@@ -23,8 +24,6 @@ def shuffle_list(choices: list) -> list:
     return choice_copy
 
 
-def get_random_email() -> str:
-    return f"{get_random_string()}@{get_random_choice(['hotmail.com', 'gmail.com', 'test.com'])}"
 
 
 def get_random_sequence(length: int = 10) -> str:
@@ -35,3 +34,15 @@ def get_random_sequence(length: int = 10) -> str:
 
 def get_random_phone() -> str:
     return get_random_sequence(10)
+
+
+def client_data_mock() -> dict:
+    return {
+        'client_address': get_random_string(),
+        'client_dni': get_random_sequence(),
+        'client_name': get_random_string(),
+        'client_phone': get_random_phone(),
+        
+    }
+
+

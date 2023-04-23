@@ -1,21 +1,11 @@
 import pytest
 
-from ..utils.functions import (shuffle_list, get_random_sequence,
-                               get_random_string)
-
-
-def client_data_mock() -> dict:
-    return {
-        'client_address': get_random_string(),
-        'client_dni': get_random_sequence(),
-        'client_name': get_random_string(),
-        'client_phone': get_random_sequence()
-    }
+from ..utils.functions import (shuffle_list, client_data_mock)
 
 
 @pytest.fixture
 def order_uri():
-    return '/order'
+    return '/order/'
 
 
 @pytest.fixture
@@ -24,15 +14,16 @@ def client_data():
 
 
 @pytest.fixture
-def order(create_ingredients, create_size, client_data) -> dict:
+def order(create_ingredients, create_size, client_data, order_uri,client) -> dict:
     ingredients = [ingredient.get('_id') for ingredient in create_ingredients]
-    size_id = create_size.get('_id')
-    return {
+    size_id = create_size.json.get('_id')
+    data_order =  {
         **client_data_mock(),
         'ingredients': ingredients,
         'size_id': size_id
     }
-
+    response = client.post(order_uri, json=data_order)
+    return response
 
 @pytest.fixture
 def create_orders(client, order_uri, create_ingredients, create_sizes) -> list:

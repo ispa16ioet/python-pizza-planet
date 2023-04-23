@@ -5,7 +5,7 @@ class Order(object):
     def __init__(self,OrderState = Default):
         self.state = OrderState(self)
         self.order_detail = ''
-        self.order_error = ''
+        self.order_error = None
         self.order_id = ''
     
     def set_state(self, state):
